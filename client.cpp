@@ -39,13 +39,14 @@ int main() {
             printf("%s\n",buf);
         if(read_bytes == 0){
             printf("server socket disconnect!\n");
+            close(sockfd);
             break;
         }
         else if(read_bytes == -1){
             close(sockfd);
             errif(true, "socket read error");
         }
-        
+
     }
     close(sockfd);
     return 0;
