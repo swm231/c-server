@@ -1,2 +1,2 @@
 ## c_server
-### slef-study
+self-study

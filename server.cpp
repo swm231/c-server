@@ -16,36 +16,34 @@ int main(){
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     serv_addr.sin_port = htons(8888);
 
-    errif(bind(sockfd, (sockaddr*)&serv_addr, sizeof serv_addr) == -1, "socket bind error");
-    errif(listen(sockfd, SOMAXCONN) == -1, "socket listen error");
-
+    errif(bind(sockfd, (const sockaddr*)&serv_addr, sizeof serv_addr) == -1, "socket bind error");
+    errif(listen(sockfd, 128) == -1, "socket listen errror");
 
     struct sockaddr_in clnt_addr;
     socklen_t clnt_addr_len = sizeof clnt_addr;
     bzero(&clnt_addr, sizeof clnt_addr);
+    int clntfd = accept(sockfd, (sockaddr*)&clnt_addr, &clnt_addr_len);
+    errif(clntfd == -1, "client accept error");
 
-    int clnt_sockfd = accept(sockfd, (sockaddr*)&clnt_addr, &clnt_addr_len);
-    errif(clnt_sockfd == -1, "socket accept error");
-    printf("new client fd %d! IP: %s Port: %d\n", clnt_sockfd, inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port));
-
+    printf("new client fd %d,IP: %s Port: %d\n", clntfd, inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port));
     while(true){
         char buf[1024];
         bzero(&buf, sizeof buf);
-        ssize_t read_bytes = read(clnt_sockfd, buf, sizeof buf);
+        ssize_t read_bytes = read(clntfd, &buf, sizeof buf);
         if(read_bytes > 0){
-            printf("message from client fd %d: %s\n", clnt_sockfd, buf);
+            printf("accept message %s from IP:%s\n", buf, inet_ntoa(clnt_addr.sin_addr));
             for(int i = 0; i < read_bytes; ++ i)
                 buf[i] = toupper(buf[i]);
-            write(clnt_sockfd, buf, sizeof buf);
+            errif(write(clntfd, &buf, sizeof buf) == -1, "clint write error");
         }
         else if(read_bytes == 0){
-            printf("client fd %d disconnect!\n", clnt_sockfd);
-            close(clnt_sockfd);
+            printf("clint %d disconnect!\n", clntfd);
+            close(clntfd);
             break;
         }
         else if(read_bytes == -1){
-            close(clnt_sockfd);
-            errif(true, "socket read error");
+            close(clntfd);
+            errif(true, "clint read error");
         }
     }
     close(sockfd);
