@@ -1,94 +1,75 @@
-#include <sys/epoll.h>
+#include "Epoll.h"
+#include "Socket.h"
+#include "InetAddress.h"
 #include <stdio.h>
-#include <sys/socket.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <ctype.h>
 #include <unistd.h>
 #include <string.h>
-#include <arpa/inet.h>
-#include "util.h"
+#include <errno.h>
+#include <vector>
+#include <ctype.h>
 
 #define MAX_EVENT 1024
 #define READ_BUFFER 1024
 
-void setnonblocking(int fd){
-    fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
-}
+void handleReadEvent(int);
 
 int main(){
-    int servfd = socket(AF_INET, SOCK_STREAM, 0);
-    errif(servfd == -1, "socket create error");
+    Socket* serv_sock = new Socket();
+    InetAddress* serv_addr = new InetAddress(8888);
+    serv_sock->bind(serv_addr);
+    serv_sock->listen();
 
-    struct sockaddr_in serv_addr;
-    bzero(&serv_addr, sizeof serv_addr);
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serv_addr.sin_port = htons(8888);
-
-    errif(bind(servfd, (sockaddr*)&serv_addr, sizeof serv_addr) == -1, "socket bind error");
-    errif(listen(servfd, 128) == -1, "socket listen error");
-
-    int epfd = epoll_create1(0);
-    errif(epfd == -1, "epoll create error");
-
-    struct epoll_event events[MAX_EVENT], ev;
-    bzero(&events, sizeof events);
-
-    bzero(&ev, sizeof ev);
-    ev.data.fd = servfd;
-    ev.events = EPOLLIN | EPOLLET;
-    setnonblocking(servfd);
-    epoll_ctl(epfd, EPOLL_CTL_ADD, servfd, &ev);
+    Epoll* ep = new Epoll();
+    serv_sock->setnonblocking();
+    ep->AddFd(serv_sock->GetFd(), EPOLLIN | EPOLLET);
 
     while(true){
-        int nfds = epoll_wait(epfd, events, MAX_EVENT, -1);
-        errif(nfds == -1, "epoll wait error");
-        for(int i = 0; i < nfds; ++ i){
-            if(events[i].data.fd == servfd){
-                struct sockaddr_in clnt_addr;
-                bzero(&clnt_addr, sizeof clnt_addr);
-                socklen_t clnt_addr_len = sizeof clnt_addr;
-
-                int clntfd = accept(servfd, (sockaddr*)&clnt_addr, &clnt_addr_len);
-                errif(clntfd == -1, "client accept error");
-                printf("new lient fd %d,IP: %s Port %d\n", clntfd, inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port));
-
-                bzero(&ev, sizeof ev);
-                ev.data.fd = clntfd;
-                ev.events = EPOLLIN | EPOLLET;
-                setnonblocking(clntfd);
-                epoll_ctl(epfd, EPOLL_CTL_ADD, clntfd, &ev);
+        std::vector<epoll_event> events = ep->poll();
+        int nfds = events.size();
+        for(int i = 0; i < nfds; i ++){
+            if(events[i].data.fd == serv_sock->GetFd()){
+                InetAddress* clnt_addr = new InetAddress();
+                Socket* clnt_sock = new Socket(serv_sock->accept(clnt_addr));
+                printf("new clinet fd %d, IP: %s, Port: %d\n", clnt_sock->GetFd(), inet_ntoa(clnt_addr->addr.sin_addr), ntohs(clnt_addr->addr.sin_port));
+                clnt_sock->setnonblocking();
+                ep->AddFd(clnt_sock->GetFd(), EPOLLIN | EPOLLET);
             }
             else if(events[i].events & EPOLLIN){
-                char buf[READ_BUFFER];
-                while(true){
-                    bzero(&buf, sizeof buf);
-                    ssize_t read_bytes = read(events[i].data.fd, buf, sizeof buf);
-                    if(read_bytes > 0){
-                        printf("message from fd %d: %s\n",events[i].data.fd, buf);
-                        for(int i = 0; i < read_bytes; ++ i)
-                                buf[i] = toupper(buf[i]);
-                        write(events[i].data.fd, buf, sizeof buf);
-                    }
-                    else if(read_bytes == -1 && errno == EINTR){
-                        printf("continue reading\n");
-                        continue;
-                    }
-                    else if(read_bytes == -1 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))){
-                        printf("finish reading once, errno: %d\n", errno);
-                        break;
-                    }
-                    else if(read_bytes == 0){
-                        printf("EOF, client fd %d disconnect!\n", events[i].data.fd);
-                        close(events[i].data.fd);
-                        break;
-                    }
-                }
+                handleReadEvent(events[i].data.fd);
             }
-            else{
-                printf("other thing\n");
+            else {
+                 printf("other thing\n");
             }
+        }
+    }
+    delete serv_sock;
+    delete serv_addr;
+    return 0;
+}
+
+void handleReadEvent(int sockfd){
+    char buf[READ_BUFFER];
+    bzero(&buf, sizeof buf);
+    while(true){
+        ssize_t read_bytes = read(sockfd, &buf, sizeof buf);
+        if(read_bytes > 0){
+            printf("message from fd %d: %s\n", sockfd, buf);
+            for(int i = 0; i < read_bytes; ++ i)
+                buf[i] = toupper(buf[i]);
+            write(sockfd, &buf, sizeof buf);
+        }
+        else if(read_bytes == -1 && errno == EINTR){
+            printf("read continue\n");
+            continue;
+        }
+        else if(read_bytes == -1 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))){
+            printf("finish read once, errno: %d\n",errno);
+            break;
+        }
+        else if(read_bytes == 0){
+            printf("EOF, client fd %d disconnect!\n", sockfd);
+            close(sockfd);
+            break;
         }
     }
 }
