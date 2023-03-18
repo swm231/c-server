@@ -1,5 +1,6 @@
 #include "Epoll.h"
 #include "Socket.h"
+#include "Channel.h"
 #include "InetAddress.h"
 #include <stdio.h>
 #include <unistd.h>
@@ -21,21 +22,23 @@ int main(){
 
     Epoll* ep = new Epoll();
     serv_sock->setnonblocking();
-    ep->AddFd(serv_sock->GetFd(), EPOLLIN | EPOLLET);
+    Channel* serv_Channel = new Channel(ep, serv_sock->GetFd());
+    serv_Channel->enablereading();
 
     while(true){
-        std::vector<epoll_event> events = ep->poll();
+        std::vector<Channel*> events = ep->poll();
         int nfds = events.size();
         for(int i = 0; i < nfds; i ++){
-            if(events[i].data.fd == serv_sock->GetFd()){
+            if(events[i]->GetFd() == serv_sock->GetFd()){
                 InetAddress* clnt_addr = new InetAddress();
                 Socket* clnt_sock = new Socket(serv_sock->accept(clnt_addr));
                 printf("new clinet fd %d, IP: %s, Port: %d\n", clnt_sock->GetFd(), inet_ntoa(clnt_addr->addr.sin_addr), ntohs(clnt_addr->addr.sin_port));
                 clnt_sock->setnonblocking();
-                ep->AddFd(clnt_sock->GetFd(), EPOLLIN | EPOLLET);
+                Channel* clntChannel = new Channel(ep, clnt_sock->GetFd());
+                clntChannel->enablereading();
             }
-            else if(events[i].events & EPOLLIN){
-                handleReadEvent(events[i].data.fd);
+            else if(events[i]->GetRevent() & EPOLLIN){
+                handleReadEvent(events[i]->GetFd());
             }
             else {
                  printf("other thing\n");
