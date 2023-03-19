@@ -3,7 +3,7 @@
 #include "Channel.h"
 #include <vector>
 
-EventLoop::EventLoop() : ep(new Epoll()), quit(false){}
+EventLoop::EventLoop() : ep(new Epoll()), quit(false), pool(new ThreadPool){}
 
 EventLoop::~EventLoop(){
     delete ep;
@@ -20,4 +20,8 @@ void EventLoop::loop(){
 
 void EventLoop::updataChannel(Channel* ch){
     ep->updataChannel(ch);
+}
+
+void EventLoop::AddTask(std::function<void()> func){
+    pool->add(func);
 }

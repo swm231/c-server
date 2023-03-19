@@ -26,7 +26,12 @@ void Buffer::clear(){
     buf.clear();
 }
 
-void Buffer::getlen(){
+void Buffer::getline(){
     buf.clear();
     std::getline(std::cin, buf);
+}
+
+void Buffer::SetBuf(const char* _buf){
+    buf.clear();
+    buf.append(_buf);
 }

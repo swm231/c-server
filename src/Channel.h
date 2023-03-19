@@ -10,23 +10,28 @@ private:
     EventLoop* loop;
     int fd;
     uint32_t event;
-    uint32_t revent;
+    uint32_t ready;
     bool inEpoll;
-    std::function<void()> callback;
+    bool useThreadPool;
+    std::function<void()> ReadCallback;
+    std::function<void()> WriteCallback;
 public:
     Channel(EventLoop*, int);
     ~Channel();
 
+    void HandleEvent();
     void enablereading();
 
     int GetFd();
     uint32_t GetEvent();
-    uint32_t GetRevent();
-    bool GetStatus();
-    void SetStatus();
-    void SetRevent(uint32_t);
-    void SetCallback(std::function<void()>);
-    void HandleEvent();
+    uint32_t GetReady();
+    bool GetInEpoll();
+    void SetInEpoll(bool _in = true);
+    void useET();
+
+    void SetReady(uint32_t);
+    void SetReadCallback(std::function<void()>);
+    void SetUseThreadPool(bool);
 };
 
 #endif

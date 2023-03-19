@@ -12,8 +12,9 @@ Acceptor::Acceptor(EventLoop* _loop) : loop(_loop){
     sock->setnonblocking();
     ch = new Channel(loop, sock->GetFd());
     std::function<void()> cb = std::bind(&Acceptor::AcceptConnection, this);
-    ch->SetCallback(cb);
+    ch->SetReadCallback(cb);
     ch->enablereading();
+    ch->SetUseThreadPool(false);
     delete addr;
 }
 

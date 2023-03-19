@@ -1,5 +1,9 @@
 #include "EventLoop.h"
 #include "Server.h"
+#include "Channel.h"
+#include "ThreadPool.h"
+#include <string>
+#include <iostream>
 
 int main(){
     EventLoop* loop = new EventLoop();
