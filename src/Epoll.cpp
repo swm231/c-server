@@ -1,13 +1,14 @@
 #include "Epoll.h"
 #include "util.h"
+#include "Server.h"
+#include <string.h> 
 #include <unistd.h>
-#include <string.h>
 
 #define MAX_EVENTS 1024
 
-Epoll::Epoll():epfd(epoll_create1(0)),events(new epoll_event[MAX_EVENTS]){
+Epoll::Epoll() : epfd(epoll_create1(0)), events(new epoll_event[MAX_EVENTS]){
     errif(epfd == -1, "epoll create error");
-    bzero(events, sizeof(*events) * MAX_EVENTS);
+    bzero(&events, sizeof(*events) * MAX_EVENTS);
 }
 
 Epoll::~Epoll(){
@@ -26,31 +27,19 @@ void Epoll::AddFd(int fd, uint32_t status){
     errif(epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev) == -1, "epoll add error");
 }
 
-/*
-std::vector<epoll_event> Epoll::poll(int timeout){
-    std::vector<epoll_event> Active_Events;
-    int nfds = epoll_wait(epfd, events, MAX_EVENTS, timeout);
-    errif(nfds == -1, "epoll wait error");
-    for(int i = 0; i < nfds; ++ i)
-        Active_Events.push_back(events[i]);
-    return Active_Events;
-}
-*/
-
 std::vector<Channel*> Epoll::poll(int timeout){
-    std::vector<Channel*> Channel_Events;
+    std::vector<Channel*> clnt_ch;
     int nfds = epoll_wait(epfd, events, MAX_EVENTS, timeout);
-    errif(nfds == -1, "epoll wait error");
+    errif(nfds == -1, "epoll wiat error");
     for(int i = 0; i < nfds; ++ i){
         Channel* ch = (Channel*)events[i].data.ptr;
         ch->SetRevent(events[i].events);
-        Channel_Events.push_back(ch);
+        clnt_ch.push_back(ch);
     }
-    return Channel_Events;
+    return clnt_ch;
 }
 
-void Epoll::updataChannel(Channel* ch)
-{
+void Epoll::updataChannel(Channel* ch){
     int fd = ch->GetFd();
     struct epoll_event ev;
     bzero(&ev, sizeof ev);
