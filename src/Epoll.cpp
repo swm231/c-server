@@ -22,7 +22,6 @@ Epoll::~Epoll(){
 std::vector<Channel*> Epoll::poll(int timeout){
     std::vector<Channel*> clnt_ch;
     int nfds = epoll_wait(epfd, events, MAX_EVENTS, timeout);
-    //printf("%d\n",nfds);
     errif(nfds == -1, "epoll wait error");
     for(int i = 0; i < nfds; ++ i){
         Channel* ch = (Channel*)events[i].data.ptr;
