@@ -3,6 +3,7 @@
 #include "util.h"
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
 
 Socket::Socket() : fd(socket(AF_INET, SOCK_STREAM, 0)){
     errif(fd == -1, "socket create error");
@@ -19,8 +20,11 @@ Socket::~Socket(){
     }
 }
 
-void Socket::bind(InetAddress* addr){
-    errif(::bind(fd, (sockaddr*)&addr->addr, addr->len) == -1, "socket bind error");
+void Socket::bind(InetAddress* _addr){
+    struct sockaddr_in addr = _addr->GetAddr();
+    socklen_t len = _addr->Getlen();
+    errif(::bind(fd, (sockaddr*)&addr, len) == -1, "socket bind error");
+    _addr->SetInetAddress(addr, len);
 }
 
 void Socket::listen(){
@@ -31,9 +35,13 @@ void Socket::setnonblocking(){
     fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
 }
 
-int Socket::accept(InetAddress* addr){
-    int nfds = ::accept(fd, (sockaddr*)&addr->addr, &addr->len);
+int Socket::accept(InetAddress* _addr){
+    struct sockaddr_in addr;
+    socklen_t len = sizeof(addr);
+    bzero(&addr, sizeof addr);
+    int nfds = ::accept(fd, (sockaddr*)&addr, &len);
     errif(nfds == -1, "socket accpet error");
+    _addr->SetInetAddress(addr, len);
     return nfds;
 }
 

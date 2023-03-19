@@ -5,20 +5,18 @@
 
 class EventLoop;
 class Socket;
-class InetAddress;
 class Channel;
 class Acceptor{
 private:
     EventLoop* loop;
     Socket* sock;
-    InetAddress* addr;
     Channel* ch;
+    std::function<void(Socket*)> NewConntectionCallback;
 public:
     Acceptor(EventLoop*);
     ~Acceptor();
 
     void AcceptConnection();
-    std::function<void(Socket*)> NewConntectionCallback;
     void SetNewConnectionCallback(std::function<void(Socket*)>);
 };
 

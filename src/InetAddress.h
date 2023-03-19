@@ -4,12 +4,17 @@
 #include <arpa/inet.h>
 
 class InetAddress{
-public:
+private:
     struct sockaddr_in addr;
     socklen_t len;
+public:
     InetAddress();
     InetAddress(uint16_t port);
     ~InetAddress();
+    
+    void SetInetAddress(sockaddr_in, socklen_t);
+    sockaddr_in GetAddr();
+    socklen_t Getlen();
 };
 
 #endif
