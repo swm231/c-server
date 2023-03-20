@@ -2,22 +2,16 @@
 #include "EventLoop.h"
 
 Channel::Channel(EventLoop* _loop, int _fd) 
-        : loop(_loop), fd(_fd), event(0), ready(0), inEpoll(false), useThreadPool(true){}
+        : loop(_loop), fd(_fd), event(0), ready(0), inEpoll(false){}
 
 Channel::~Channel(){}
 
 void Channel::HandleEvent(){
     if(ready & (EPOLLIN | EPOLLPRI)){
-        if(useThreadPool)
-            loop->AddTask(ReadCallback);
-        else    
-            ReadCallback();
+        ReadCallback();
     }
     if(ready & EPOLLOUT){
-        if(useThreadPool)
-            loop->AddTask(WriteCallback);
-        else 
-            WriteCallback();
+        WriteCallback();
     }
 }
 
@@ -59,6 +53,6 @@ void Channel::SetReadCallback(std::function<void()> cb){
     ReadCallback = cb;
 }
 
-void Channel::SetUseThreadPool(bool bl){
-    useThreadPool = bl;
-}
+// void Channel::SetUseThreadPool(bool bl){
+//     useThreadPool = bl;
+// }

@@ -10,7 +10,7 @@ class EventLoop{
 private:
     Epoll* ep;
     bool quit;
-    ThreadPool* pool;
+    //ThreadPool* pool;
 public:
     EventLoop();
     ~EventLoop();

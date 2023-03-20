@@ -9,9 +9,11 @@ class Acceptor;
 class Connection;
 class Server{
 private:
-    EventLoop* loop;
+    EventLoop* MainReator;
     Acceptor* acceptor;
     std::map<int, Connection*> connections;
+    std::vector<EventLoop*> SubReators;
+    ThreadPool* thread_pool;
 public:
     Server(EventLoop*);
     ~Server();

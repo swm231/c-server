@@ -10,10 +10,19 @@
 
 #define MAX_BUFFER 1024
 
-Server::Server(EventLoop* _loop) : loop(_loop){
-    acceptor = new Acceptor(loop);
+Server::Server(EventLoop* _loop) : MainReator(_loop), acceptor(new Acceptor(MainReator)){
     std::function<void(Socket*)> cb = std::bind(&Server::NewConnection, this, std::placeholders::_1);
     acceptor->SetNewConnectionCallback(cb);
+
+    int size = std::thread::hardware_concurrency();
+    thread_pool = new ThreadPool(size);
+    for(int i = 0; i < size; ++ i)
+        SubReators.push_back(new EventLoop());
+
+    for(int i = 0; i < size; ++ i){
+        std::function<void()> sub_loop = std::bind(&EventLoop::loop, SubReators[i]);
+        thread_pool->add(sub_loop);
+    }
 }
 
 Server::~Server(){
@@ -21,7 +30,9 @@ Server::~Server(){
 }
 
 void Server::NewConnection(Socket* sock){
-    Connection* conn = new Connection(loop, sock);
+    // 全随机调度
+    int rd = sock->GetFd() % SubReators.size();
+    Connection* conn = new Connection(SubReators[rd], sock);
     std::function<void(Socket*)> cb = std::bind(&Server::DeleteConnection, this, std::placeholders::_1);
     conn->SetDeleteConnectionCallback(cb);
     connections[sock->GetFd()] = conn;

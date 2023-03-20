@@ -15,7 +15,7 @@ Connection::Connection(EventLoop* _loop, Socket* _sock)
     ch->useET();
     std::function<void()> cb = std::bind(&Connection::echo, this, sock->GetFd());
     ch->SetReadCallback(cb);
-    ch->SetUseThreadPool(true);
+    // ch->SetUseThreadPool(true);
 }
 
 Connection::~Connection(){
