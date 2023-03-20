@@ -30,6 +30,7 @@ void Acceptor::AcceptConnection(){
     clnt_sock->setnonblocking();
     NewConntectionCallback(clnt_sock);
     delete clnt_addr;
+    //delete clnt_sock;
 }
 
 void Acceptor::SetNewConnectionCallback(std::function<void(Socket*)> _cb){

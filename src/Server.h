@@ -9,7 +9,7 @@ class Acceptor;
 class Connection;
 class Server{
 private:
-    EventLoop* MainReator;
+    EventLoop* MainReactor;
     Acceptor* acceptor;
     std::map<int, Connection*> connections;
     std::vector<EventLoop*> SubReators;

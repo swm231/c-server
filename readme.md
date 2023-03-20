@@ -1,2 +1,5 @@
 ## c_server
-self-study
+
+服务器采用主从Reactor多线程模式，MainReactor监听新连接，将新连接调度给SubReactor
+每一个SubReactor都由一个线程负责，执行Connection中的事件
+Epoll监听事件内的指针指向Channel，每来一个新事件就执行Channel内绑定好的回调函数（添加新连接或输入输出）
