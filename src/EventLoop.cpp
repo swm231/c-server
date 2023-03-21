@@ -22,6 +22,10 @@ void EventLoop::updataChannel(Channel* ch){
     ep->updataChannel(ch);
 }
 
+void EventLoop::deleteChannel(Channel* ch){
+    ep->deleteChannel(ch);
+}
+
 void EventLoop::AddTask(std::function<void()> func){
     func();
     //pool->add(func);

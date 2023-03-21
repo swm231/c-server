@@ -8,6 +8,7 @@ private:
     std::string buf;
 public:
     Buffer();
+    Buffer(std::string);
     ~Buffer();
 
     void append(const char*, int);

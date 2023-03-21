@@ -6,7 +6,9 @@
 
 class Socket;
 class Acceptor;
+class Account;
 class Connection;
+class Mysql;
 class Server{
 private:
     EventLoop* MainReactor;
@@ -14,6 +16,8 @@ private:
     std::map<int, Connection*> connections;
     std::vector<EventLoop*> SubReators;
     ThreadPool* thread_pool;
+    Mysql* mysql;
+    std::function<void(Connection*)> OnConnectionCallback;
 public:
     Server(EventLoop*);
     ~Server();
@@ -21,6 +25,12 @@ public:
     void handleReadEvent(int);
     void NewConnection(Socket*);
     void DeleteConnection(Socket*);
+    void OnConnect(std::function<void(Connection*)>);
+
+    bool Insert(Account&&);
+    bool Delete(Account&&);
+    bool Modify(Account&&);
+    bool Check(Account&&);
 };
 
 #endif

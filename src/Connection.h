@@ -7,22 +7,44 @@ class EventLoop;
 class Socket;
 class Buffer;
 class Channel;
+class Server;
+class Account;
+enum State{
+    Invalid = 1,
+    Handshaking,
+    Connected,
+    DisConnected,
+    Closed,
+    Failed,
+};
+
 class Connection{
 private:
+    Server* server;
     EventLoop* loop;
     Socket* sock;
     Channel* ch;
     Buffer* ReadBuffer;
+    Buffer* SendBuffer;
+    State state{State::Invalid};
+    std::function<void(Connection*)> OnConnectionCallback;
     std::function<void(Socket*)> DeleteConnectionCallback;
-    std::string *inBuffer;
-
 public:
-    Connection(EventLoop*, Socket*);
+    Connection(Server*, EventLoop*, Socket*);
     ~Connection();
 
-    void echo(int);
+    void Send(int);
+    void Read();
     void SetDeleteConnectionCallback(std::function<void(Socket*)>);
-    void send(int);
+    void SetOnConnectionCallback(std::function<void(Connection*)>);
+    void Close();
+
+    State GetState();
+
+    bool Insert(Account&&);
+    bool Delete(Account&&);
+    bool Modify(Account&&);
+    bool Check(Account&&);
 };
 
 #endif

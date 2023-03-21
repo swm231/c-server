@@ -5,6 +5,8 @@
 
 Buffer::Buffer(){}
 
+Buffer::Buffer(std::string _buf) : buf(_buf){}
+
 Buffer::~Buffer(){}
 
 void Buffer::append(const char* _str, int _size){

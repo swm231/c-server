@@ -16,6 +16,7 @@ public:
     ~EventLoop();
     void loop();
     void updataChannel(Channel*);
+    void deleteChannel(Channel*);
     void AddTask(std::function<void()>);
 };
 
