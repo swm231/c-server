@@ -3,6 +3,7 @@
 
 #include "EventLoop.h"
 #include <map>
+#include <vector>
 
 class Socket;
 class Acceptor;
@@ -31,6 +32,11 @@ public:
     bool Delete(const Account*);
     bool Modify(const Account*);
     ssize_t Check(const Account*);
+    bool FdSet(const Account*, int);
+
+    std::vector<std::string> LookList(const Account*);
+    bool Find(const char*);
+    void AddShip(Account*, const char*);
 };
 
 #endif

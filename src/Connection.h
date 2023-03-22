@@ -2,21 +2,22 @@
 #define _CONNECTION_H_
 
 #include <functional>
+#include <vector>
+#include <string>
 
 class EventLoop;
 class Socket;
 class Buffer;
 class Channel;
+class Online;
 class Server;
 class LogIn;
 class Account;
 enum State{
     Invalid,
-    Handshaking,
     Connected,
     DisConnected,
     Closed,
-    Failed,
 };
 
 class Connection{
@@ -30,24 +31,28 @@ private:
     Buffer* SendBuffer;
     State state;
     LogIn* login;
-    std::function<void(Connection*)> OnConnection;
+    Online* onl;
     std::function<void(Socket*)> DeleteConnectionCallback;
+    
 public:
+    std::function<void()> OnLineCallback;
     Connection(Server*, EventLoop*, Socket*);
     ~Connection();
 
     void Send_str(const char*);
     void Send();
     void Read();
+    void sBuf_append(const char*, int);
     
     void SetDeleteConnectionCallback(std::function<void(Socket*)>);
-    void SetOnConnectionCallback(std::function<void(Connection*)>);
+    void SetOnLineCallback(std::function<void()>);
+    void Set_Online_channel();
     void Close();
 
     const char* Readp();
     void Set_Name();
     void Set_Pass();
-
+    void Set_State(State);
 
     State GetState();
 
@@ -55,7 +60,11 @@ public:
     bool Delete();
     bool Modify();
     ssize_t Check();  //0:全部正确  1:用户名正确  2:全不正确
+    bool FdSet(int);
 
+    std::vector<std::string> LookList();
+    bool Find(const char*);
+    void AddShip(const char*);
 };
 
 #endif

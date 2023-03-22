@@ -3,6 +3,7 @@
 #include "Buffer.h"
 #include "util.h"
 #include "Mysql.h"
+#include "Online.h"
 #include "Channel.h"
 #include "Login.h"
 #include "EventLoop.h"
@@ -15,20 +16,19 @@
 Connection::Connection(Server* _server, EventLoop* _loop, Socket* _sock) 
         : server(_server), loop(_loop), sock(_sock), ch(new Channel(loop, sock->GetFd())),
           acc(new Account()),ReadBuffer(new Buffer()), SendBuffer(new Buffer()), 
-          state(State::Invalid), login(new LogIn(this, ch)){
-
-    state = State::Connected;
-
-    ch->enablereading();
-    ch->useET();
+          state(State::Invalid), login(new LogIn(this, ch, sock)) {
+    onl = new Online(this);
     Send_str("Successfully connecting to the server\n 1 Sign in\n 2 Sign on\n");
+
 }
 
 Connection::~Connection(){
-    delete ch;
     delete sock;
+    delete ch;
+    delete acc;
     delete ReadBuffer;
     delete SendBuffer;
+    delete login;
 }
 
 void Connection::Send_str(const char* str){
@@ -58,8 +58,9 @@ void Connection::Read(){
     while(true){
         bzero(&buf, sizeof buf);
         ssize_t read_bytes = read(sock->GetFd(), buf, sizeof buf);
-        if(read_bytes > 0)
+        if(read_bytes > 0){
             ReadBuffer->append(buf, read_bytes);
+        }
         else if(read_bytes == -1 && errno == EINTR)
             continue;
         else if(read_bytes == -1 && ((errno == EAGAIN) || (errno == EWOULDBLOCK)))
@@ -67,14 +68,29 @@ void Connection::Read(){
         else if(read_bytes == 0){
             printf("EOF, client fd %d disconnection\n", sock->GetFd());
             //do task
+            FdSet(-1);
+            state = State::Closed;
             close(sock->GetFd());
             break;
         }
     }
 }
 
+void Connection::sBuf_append(const char* str, int sz){
+    SendBuffer->append(str, sz);
+}
+
 void Connection::SetDeleteConnectionCallback(std::function<void(Socket*)> cb){
     DeleteConnectionCallback = cb;
+}
+
+void Connection::SetOnLineCallback(std::function<void()> cb){
+    OnLineCallback = std::move(cb);
+}
+
+void Connection::Set_Online_channel(){
+    ch->SetReadCallback(std::move(OnLineCallback));
+    loop->updataChannel(ch);
 }
 
 const char* Connection::Readp(){
@@ -87,6 +103,10 @@ void Connection::Set_Name(){
 
 void Connection::Set_Pass(){
     acc->Set_Pass(ReadBuffer->c_str());
+}
+
+void Connection::Set_State(State st){
+    state = st;
 }
 
 void Connection::Close(){
@@ -111,4 +131,19 @@ bool Connection::Modify(){
 
 ssize_t Connection::Check(){
     return server->Check(acc);
+}
+
+bool Connection::FdSet(int fd){
+    return server->FdSet(acc, fd);
+}
+
+std::vector<std::string> Connection::LookList(){
+    return server->LookList(acc);
+}
+
+bool Connection::Find(const char* str){
+    return server->Find(str);
+}
+void Connection::AddShip(const char* str){
+    server->AddShip(acc, str);
 }

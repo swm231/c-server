@@ -52,7 +52,3 @@ void Channel::SetReady(uint32_t t){
 void Channel::SetReadCallback(std::function<void()> cb){
     ReadCallback = cb;
 }
-
-// void Channel::SetUseThreadPool(bool bl){
-//     useThreadPool = bl;
-// }

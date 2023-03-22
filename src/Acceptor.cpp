@@ -26,10 +26,9 @@ void Acceptor::AcceptConnection(){  //新连接第一个函数 获取套接字
     InetAddress* clnt_addr = new InetAddress();
     Socket* clnt_sock = new Socket(sock->accept(clnt_addr));
     printf("new client fd: %d, IP: %s, Port: %d\n", clnt_sock->GetFd(), inet_ntoa(clnt_addr->GetAddr().sin_addr), ntohs(clnt_addr->GetAddr().sin_port));
-    NewConntectionCallback(clnt_sock);
     clnt_sock->setnonblocking();
+    NewConntectionCallback(clnt_sock);
     delete clnt_addr;
-    //delete clnt_sock;
 }
 
 void Acceptor::SetNewConnectionCallback(std::function<void(Socket*)> _cb){

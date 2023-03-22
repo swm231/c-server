@@ -18,20 +18,24 @@ enum SignOn{
     oPass,
     rPass,
 };
+class Socket;
 class Connection;
 class Channel;
 class LogIn{
 private:
+    Socket* sock;
     Channel* ch;
-    Connection* conn;    
+    Connection* conn;
     LogState lstate;
     SignIn istate;
     SignOn ostate;
 public:
-    LogIn(Connection*, Channel*);
+    LogIn(Connection*, Channel*, Socket*);
     ~LogIn();
 
     void Log();
+    void FdSet();
+    void LogSuccess();
 };
 
 #endif

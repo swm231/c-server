@@ -3,6 +3,7 @@
 
 #include <mysql/mysql.h>
 #include <string>
+#include <vector>
 
 class Account{
 public:
@@ -40,6 +41,11 @@ public:
     bool Delete(const Account*);
     bool Modify(const Account*);
     ssize_t Check(const Account*);
+    bool Fd_Modify(const Account*, int);
+
+    std::vector<std::string> LookList(const Account*);
+    bool Find(const char*);
+    void AddShip(Account*, const char*);
 };
 
 #endif

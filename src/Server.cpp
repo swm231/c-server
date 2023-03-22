@@ -41,7 +41,6 @@ void Server::NewConnection(Socket* sock){   //新连接第二个函数 新建con
     Connection* conn = new Connection(this, SubReators[rd], sock); 
     std::function<void(Socket*)> cb = std::bind(&Server::DeleteConnection, this, std::placeholders::_1);
     conn->SetDeleteConnectionCallback(cb);
-    //conn->SetOnConnectionCallback(OnConnectionCallback);  //为新客服端channel的套接字绑定 函数
     connections[sock->GetFd()] = conn;
 }
 
@@ -69,4 +68,20 @@ bool Server::Modify(const Account* acc){
 
 ssize_t Server::Check(const Account* acc){
     return mysql->Check(acc);
+}
+
+bool Server::FdSet(const Account* acc, int fd){
+    return mysql->Fd_Modify(acc, fd);
+}
+
+std::vector<std::string> Server::LookList(const Account* acc){
+    return mysql->LookList(acc);
+}
+
+bool Server::Find(const char* str){
+    return mysql->Find(str);
+}
+
+void Server::AddShip(Account* acc, const char* str){
+    mysql->AddShip(acc, str);
 }

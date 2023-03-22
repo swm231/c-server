@@ -1,5 +1,6 @@
 #include "Mysql.h"
 #include "util.h"
+#include <vector>
 #include <string>
 #include <iostream>
 
@@ -51,8 +52,8 @@ bool Mysql::Delete(const Account* acc){
 
 bool Mysql::Modify(const Account* acc){
     char sql[MAX_SQL];
-    sprintf(sql, "UPDATE accounts SET passwd = '%s'"
-                "where name = '%s';", acc->passwd_.c_str(), acc->name_.c_str());
+    sprintf(sql, "UPDATE accounts SET passwd = '%s', sockfd = '%d'"
+                "where name = '%s';", acc->passwd_.c_str(), -1, acc->name_.c_str());
     if(mysql_query(mysql, sql)){
         errif(true, mysql_error(mysql));
         return false;
@@ -76,4 +77,55 @@ ssize_t Mysql::Check(const Account* acc){
         return 0;
     }
     return 2;
+}
+
+bool Mysql::Fd_Modify(const Account* acc, int fd){
+    char sql[MAX_SQL];
+    sprintf(sql, "UPDATE accounts SET sockfd = '%d'"
+                "where name = '%s';", fd, acc->name_.c_str());
+    if(mysql_query(mysql, sql)){
+        errif(true, mysql_error(mysql));
+        return false;
+    }
+    return true;
+}
+
+std::vector<std::string> Mysql::LookList(const Account* acc){
+    char sql[MAX_SQL];
+    sprintf(sql, "SELECT * from relationship where name1 = '%s';", acc->name_.c_str());
+    if(mysql_query(mysql, sql)){
+        errif(true, mysql_error(mysql));
+    }
+    result = mysql_store_result(mysql);
+    std::vector<std::string> v;
+    if(result){
+        int n = mysql_num_rows(result);
+        for(int i = 0; i < n; ++ i){
+            row = mysql_fetch_row(result);
+            v.push_back(row[1]);
+        }
+    }
+    return v;
+}
+
+bool Mysql::Find(const char* str){
+    char sql[MAX_SQL];
+    sprintf(sql, "SELECT * from accounts where name = '%s';", str);
+    if(mysql_query(mysql, sql)){
+        errif(true, mysql_error(mysql));
+        return -1;
+    }
+    result = mysql_store_result(mysql);
+    if(result){
+        if (mysql_num_rows(result)) return true;
+        return false;
+    }
+    return false;
+}
+
+void Mysql::AddShip(Account* acc, const char* str){
+    char sql[MAX_SQL];
+    sprintf(sql, "INSERT into relationship (name1, name2) values('%s', '%s');", acc->name_.c_str(), str);
+    if(mysql_query(mysql, sql))
+        errif(true, mysql_error(mysql));
 }
