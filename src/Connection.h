@@ -10,12 +10,28 @@ class Channel;
 class Server;
 class Account;
 enum State{
-    Invalid = 1,
+    Invalid,
     Handshaking,
     Connected,
     DisConnected,
     Closed,
     Failed,
+};
+enum LogState{
+    lInvalid,
+    lSignIn,
+    lSignon,
+};
+enum SignIn{
+    iInvalid,
+    iUser,
+    iPass,
+};
+enum SignOn{
+    oInvalid,
+    oUser,
+    oPass,
+    rPass,
 };
 
 class Connection{
@@ -24,27 +40,35 @@ private:
     EventLoop* loop;
     Socket* sock;
     Channel* ch;
+    Account* acc;
     Buffer* ReadBuffer;
     Buffer* SendBuffer;
-    State state{State::Invalid};
-    std::function<void(Connection*)> OnConnectionCallback;
+    State state;
+    LogState lstate;
+    SignIn istate;
+    SignOn ostate;
+    std::function<void(Connection*)> OnConnection;
     std::function<void(Socket*)> DeleteConnectionCallback;
 public:
     Connection(Server*, EventLoop*, Socket*);
     ~Connection();
 
-    void Send(int);
+    void Send_str(const char*);
+    void Send();
     void Read();
+
+    void LogIn();
+    
     void SetDeleteConnectionCallback(std::function<void(Socket*)>);
     void SetOnConnectionCallback(std::function<void(Connection*)>);
     void Close();
 
     State GetState();
 
-    bool Insert(Account&&);
-    bool Delete(Account&&);
-    bool Modify(Account&&);
-    bool Check(Account&&);
+    bool Insert();
+    bool Delete();
+    bool Modify();
+    ssize_t Check();  //0:全部正确  1:用户名正确  2:全不正确
 };
 
 #endif

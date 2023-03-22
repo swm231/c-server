@@ -8,6 +8,20 @@ class Account{
 public:
     std::string name_;
     std::string passwd_;
+    Account():name_(""), passwd_(""){};
+    ~Account(){
+        name_.clear();
+        passwd_.clear();
+    }
+
+    void Set_Name(const char* _str){
+        name_.clear();
+        name_.append(_str);
+    }
+    void Set_Pass(const char* _str){
+        passwd_.clear();
+        passwd_.append(_str);
+    }
 };
 
 class Mysql{
@@ -22,10 +36,10 @@ public:
     bool InitSql(std::string,std::string,std::string,std::string);
     bool ExeSql(std::string);
 
-    bool Insert(Account&&);
-    bool Delete(Account&&);
-    bool Modify(Account&&);
-    bool Check(Account&&);
+    bool Insert(const Account*);
+    bool Delete(const Account*);
+    bool Modify(const Account*);
+    ssize_t Check(const Account*);
 };
 
 #endif

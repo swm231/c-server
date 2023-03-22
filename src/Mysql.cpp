@@ -29,9 +29,9 @@ bool Mysql::ExeSql(std::string sql){
     return true;
 }
 
-bool Mysql::Insert(Account&& acc){
+bool Mysql::Insert(const Account* acc){
     char sql[MAX_SQL];
-    sprintf(sql, "INSERT into accounts (name, passwd) values('%s', '%s');", acc.name_.c_str(), acc.passwd_.c_str());
+    sprintf(sql, "INSERT into accounts (name, passwd) values('%s', '%s');", acc->name_.c_str(), acc->passwd_.c_str());
     if(mysql_query(mysql, sql)){
         errif(true, mysql_error(mysql));
         return false;
@@ -39,9 +39,9 @@ bool Mysql::Insert(Account&& acc){
     return true;
 }
 
-bool Mysql::Delete(Account&& acc){
+bool Mysql::Delete(const Account* acc){
     char sql[MAX_SQL];
-    sprintf(sql, "DELETE from accounts where name = '%s';", acc.passwd_.c_str());
+    sprintf(sql, "DELETE from accounts where name = '%s';", acc->passwd_.c_str());
     if(mysql_query(mysql, sql)){
         errif(true, mysql_error(mysql));
         return false;
@@ -49,10 +49,10 @@ bool Mysql::Delete(Account&& acc){
     return true;
 }
 
-bool Mysql::Modify(Account&& acc){
+bool Mysql::Modify(const Account* acc){
     char sql[MAX_SQL];
     sprintf(sql, "UPDATE accounts SET passwd = '%s'"
-                "where name = '%s';", acc.passwd_.c_str(), acc.name_.c_str());
+                "where name = '%s';", acc->passwd_.c_str(), acc->name_.c_str());
     if(mysql_query(mysql, sql)){
         errif(true, mysql_error(mysql));
         return false;
@@ -60,20 +60,20 @@ bool Mysql::Modify(Account&& acc){
     return true;
 }
 
-bool Mysql::Check(Account&& acc){
+ssize_t Mysql::Check(const Account* acc){
     char sql[MAX_SQL];
-    sprintf(sql, "SELECT * from accounts where name = '%s';", acc.name_.c_str());
+    sprintf(sql, "SELECT * from accounts where name = '%s';", acc->name_.c_str());
     if(mysql_query(mysql, sql)){
         errif(true, mysql_error(mysql));
-        return false;
+        return -1;
     }
     result = mysql_store_result(mysql);
     if(result){
         int n = mysql_num_rows(result);
-        // if(n == 0) 用户不存在
+        if(n == 0)  return 2; //  用户不存在
         row = mysql_fetch_row(result);
-        if(acc.passwd_ != row[1]) return false;
-        return true;
+        if(acc->passwd_ != row[1]) return 1;
+        return 0;
     }
-    return false;
+    return 2;
 }

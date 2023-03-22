@@ -27,10 +27,10 @@ public:
     void DeleteConnection(Socket*);
     void OnConnect(std::function<void(Connection*)>);
 
-    bool Insert(Account&&);
-    bool Delete(Account&&);
-    bool Modify(Account&&);
-    bool Check(Account&&);
+    bool Insert(const Account*);
+    bool Delete(const Account*);
+    bool Modify(const Account*);
+    ssize_t Check(const Account*);
 };
 
 #endif

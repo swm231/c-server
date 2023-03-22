@@ -35,13 +35,13 @@ Server::~Server(){
         delete SubReators[i];
 }
 
-void Server::NewConnection(Socket* sock){
+void Server::NewConnection(Socket* sock){   //新连接第二个函数 新建connection 分配工作线程
     // 全随机调度
     int rd = sock->GetFd() % SubReators.size();
     Connection* conn = new Connection(this, SubReators[rd], sock); 
     std::function<void(Socket*)> cb = std::bind(&Server::DeleteConnection, this, std::placeholders::_1);
     conn->SetDeleteConnectionCallback(cb);
-    conn->SetOnConnectionCallback(OnConnectionCallback);  //为新客服端channel的套接字绑定 函数
+    //conn->SetOnConnectionCallback(OnConnectionCallback);  //为新客服端channel的套接字绑定 函数
     connections[sock->GetFd()] = conn;
 }
 
@@ -55,18 +55,18 @@ void Server::OnConnect(std::function<void(Connection*)> cb){
     OnConnectionCallback = std::move(cb);
 }
 
-bool Server::Insert(Account&& acc){
-    return mysql->Insert(std::move(acc));
+bool Server::Insert(const Account* acc){
+    return mysql->Insert(acc);
 }
 
-bool Server::Delete(Account&& acc){
-    return mysql->Delete(std::move(acc));
+bool Server::Delete(const Account* acc){
+    return mysql->Delete(acc);
 }
 
-bool Server::Modify(Account&& acc){
-    return mysql->Modify(std::move(acc));
+bool Server::Modify(const Account* acc){
+    return mysql->Modify(acc);
 }
 
-bool Server::Check(Account&& acc){
-    return mysql->Check(std::move(acc));
+ssize_t Server::Check(const Account* acc){
+    return mysql->Check(acc);
 }

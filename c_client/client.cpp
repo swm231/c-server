@@ -21,22 +21,26 @@ int main() {
 
     errif(connect(sockfd, (sockaddr*)&serv_addr, sizeof(serv_addr)) == -1, "socket connect error");
 
-    int cnt=10;
-    while(cnt --){
-        char buf[BUFFER_SIZE];
+    char buf[BUFFER_SIZE];
+    bzero(&buf, sizeof buf);
+    ssize_t read_bytes = read(sockfd, buf, sizeof buf);
+    buf[read_bytes] = '\0';
+    printf("%s", buf);
+
+    while(true){
         bzero(&buf, sizeof buf);
         scanf("%s", buf);
-        ssize_t write_byte = write(sockfd, &buf, strlen(buf));
-        if(write_byte == -1){
+        ssize_t write_bytes = write(sockfd, &buf, strlen(buf));
+        if(write_bytes == -1){
             printf("socket already disconnect");
             break;
         }
         
         bzero(&buf, sizeof buf);
-        ssize_t read_bytes = read(sockfd, buf, sizeof buf);
+        read_bytes = read(sockfd, buf, sizeof buf);
         buf[read_bytes]='\0';
         if(read_bytes > 0)
-            printf("%s\n",buf);
+            printf("%s",buf);
         if(read_bytes == 0){
             printf("server socket disconnect!\n");
             close(sockfd);
