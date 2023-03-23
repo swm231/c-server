@@ -27,35 +27,36 @@ private:
     Socket* sock;
     Channel* ch;
     Account* acc;
-    Buffer* ReadBuffer;
-    Buffer* SendBuffer;
     State state;
     LogIn* login;
     Online* onl;
     std::function<void(Socket*)> DeleteConnectionCallback;
-    
-public:
     std::function<void()> OnLineCallback;
+public:
+    Buffer* ReadBuffer;
+    Buffer* SendBuffer;
     Connection(Server*, EventLoop*, Socket*);
     ~Connection();
-
+    //Buffer
     void Send_str(const char*);
-    void Send();
+    void Send(int);
+    void SendFd(const char*, int);
+    void SendR(int);
     void Read();
-    void sBuf_append(const char*, int);
-    
+    void sBuf_append(const char*);
+    const char* Readp();
+    //Connection
     void SetDeleteConnectionCallback(std::function<void(Socket*)>);
     void SetOnLineCallback(std::function<void()>);
     void Set_Online_channel();
     void Close();
-
-    const char* Readp();
+    //Accoount
     void Set_Name();
     void Set_Pass();
     void Set_State(State);
 
     State GetState();
-
+    //Mysql
     bool Insert();
     bool Delete();
     bool Modify();
@@ -65,6 +66,7 @@ public:
     std::vector<std::string> LookList();
     bool Find(const char*);
     void AddShip(const char*);
+    int FindFd(const char*);
 };
 
 #endif

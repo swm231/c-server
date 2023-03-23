@@ -85,3 +85,7 @@ bool Server::Find(const char* str){
 void Server::AddShip(Account* acc, const char* str){
     mysql->AddShip(acc, str);
 }
+
+int Server::FindFd(const char* str){
+    return mysql->FindFd(str);
+}

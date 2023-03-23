@@ -5,13 +5,14 @@
 
 class Buffer{
 private:
-    std::string buf;
 public:
+    std::string buf;
     Buffer();
     Buffer(std::string);
     ~Buffer();
 
     void append(const char*, int);
+    void append(const char*);
     ssize_t size();
     const char* c_str();
     void clear();

@@ -37,6 +37,7 @@ public:
     std::vector<std::string> LookList(const Account*);
     bool Find(const char*);
     void AddShip(Account*, const char*);
+    int FindFd(const char*);
 };
 
 #endif

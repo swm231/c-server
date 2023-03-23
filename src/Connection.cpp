@@ -17,7 +17,7 @@ Connection::Connection(Server* _server, EventLoop* _loop, Socket* _sock)
         : server(_server), loop(_loop), sock(_sock), ch(new Channel(loop, sock->GetFd())),
           acc(new Account()),ReadBuffer(new Buffer()), SendBuffer(new Buffer()), 
           state(State::Invalid), login(new LogIn(this, ch, sock)) {
-    onl = new Online(this);
+    onl = new Online(this, sock, acc);
     Send_str("Successfully connecting to the server\n 1 Sign in\n 2 Sign on\n");
 
 }
@@ -32,13 +32,13 @@ Connection::~Connection(){
 }
 
 void Connection::Send_str(const char* str){
-    SendBuffer->clear();
     SendBuffer->SetBuf(str);
-    Send();
+    Send(sock->GetFd());
+    SendBuffer->clear();
 }
 
-void Connection::Send(){
-    int fd = sock->GetFd();
+void Connection::Send(int fd){
+    //int fd = sock->GetFd();
     char buf[SendBuffer->size()];
     strcpy(buf, SendBuffer->c_str());
     int data_size = SendBuffer->size();
@@ -50,6 +50,20 @@ void Connection::Send(){
         data_left -= write_bytes;
     }
     SendBuffer->clear();
+}
+
+void Connection::SendFd(const char* str, int fd){
+    SendBuffer->SetBuf(str);
+    Send(fd);
+}
+
+void Connection::SendR(int fd){
+    SendBuffer->SetBuf(ReadBuffer->c_str());
+    Send(fd);
+}
+
+void Connection::sBuf_append(const char* str){
+    SendBuffer->append(str);
 }
 
 void Connection::Read(){
@@ -74,10 +88,6 @@ void Connection::Read(){
             break;
         }
     }
-}
-
-void Connection::sBuf_append(const char* str, int sz){
-    SendBuffer->append(str, sz);
 }
 
 void Connection::SetDeleteConnectionCallback(std::function<void(Socket*)> cb){
@@ -146,4 +156,8 @@ bool Connection::Find(const char* str){
 }
 void Connection::AddShip(const char* str){
     server->AddShip(acc, str);
+}
+
+int Connection::FindFd(const char* str){
+    return server->FindFd(str);
 }

@@ -16,6 +16,10 @@ void Buffer::append(const char* _str, int _size){
     }
 }
 
+void Buffer::append(const char* _str){
+    buf.append(_str);
+}
+
 ssize_t Buffer::size(){
     return buf.size();
 }
