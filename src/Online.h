@@ -5,7 +5,7 @@
 
 enum Online_State{
     Home,
-    Add,
+    priSend,
     wSend,
     Sending,
     Sended,
@@ -28,6 +28,7 @@ public:
 
     void Onl();
     void Home();
+    void Send(int);
 };
 
 #endif

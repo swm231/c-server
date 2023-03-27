@@ -78,6 +78,10 @@ std::vector<std::string> Server::LookList(const Account* acc){
     return mysql->LookList(acc);
 }
 
+std::vector<int> Server::GetOnlFd(){
+    return mysql->GetOnlFd();
+}
+
 bool Server::Find(const char* str){
     return mysql->Find(str);
 }

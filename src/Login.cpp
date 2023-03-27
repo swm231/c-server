@@ -86,7 +86,7 @@ void LogIn::FdSet(){
 }
 
 void LogIn::LogSuccess(){
-    conn->Send_str("\nWelcome to OO:\n 1 Look friend list\n 2 Send message\n 3 Add friend\n");
+    conn->Send_str("\nWelcome to OO:\n 1 Look online list\n 2 Send message\n 3 Add friend\n");
     FdSet();
     conn->Set_State(State::Connected);
     conn->Set_Online_channel();

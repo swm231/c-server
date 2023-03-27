@@ -44,6 +44,7 @@ public:
     bool Fd_Modify(const Account*, int);
 
     std::vector<std::string> LookList(const Account*);
+    std::vector<int> GetOnlFd();
     bool Find(const char*);
     void AddShip(Account*, const char*);
     int FindFd(const char*);

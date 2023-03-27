@@ -92,7 +92,7 @@ bool Mysql::Fd_Modify(const Account* acc, int fd){
 
 std::vector<std::string> Mysql::LookList(const Account* acc){
     char sql[MAX_SQL];
-    sprintf(sql, "SELECT * from relationship where name1 = '%s';", acc->name_.c_str());
+    sprintf(sql, "SELECT * from accounts where sockfd != -1;");
     if(mysql_query(mysql, sql)){
         errif(true, mysql_error(mysql));
     }
@@ -102,7 +102,34 @@ std::vector<std::string> Mysql::LookList(const Account* acc){
         int n = mysql_num_rows(result);
         for(int i = 0; i < n; ++ i){
             row = mysql_fetch_row(result);
-            v.push_back(row[1]);
+            v.push_back(row[0]);
+        }
+    }
+    return v;
+}
+
+int toi(std::string s){
+    int res = 0;
+    for(int i = 0; s[i]; ++ i)
+        res *= 10, res += s[i] - '0';
+    return res;
+}
+
+std::vector<int> Mysql::GetOnlFd(){
+    char sql[MAX_SQL];
+    sprintf(sql, "SELECT * from accounts where sockfd != -1;");
+    if(mysql_query(mysql, sql)){
+        errif(true, mysql_error(mysql));
+    }
+    result = mysql_store_result(mysql);
+    std::vector<int> v;
+    if(result){
+        int n = mysql_num_rows(result);
+        for(int i = 0; i < n; ++ i){
+            row = mysql_fetch_row(result);
+            std::string s;
+            s.append(row[2]);
+            v.push_back(toi(s));
         }
     }
     return v;

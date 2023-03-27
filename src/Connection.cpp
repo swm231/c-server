@@ -151,6 +151,10 @@ std::vector<std::string> Connection::LookList(){
     return server->LookList(acc);
 }
 
+std::vector<int> Connection::GetOnlFd(){
+    return server->GetOnlFd();
+}
+
 bool Connection::Find(const char* str){
     return server->Find(str);
 }

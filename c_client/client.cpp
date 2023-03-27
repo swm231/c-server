@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include "Epoll.h"
+#include "Channel.h"
 #include "util.h"
 
 #define BUFFER_SIZE 1024

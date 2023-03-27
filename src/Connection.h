@@ -64,6 +64,7 @@ public:
     bool FdSet(int);
 
     std::vector<std::string> LookList();
+    std::vector<int> GetOnlFd();
     bool Find(const char*);
     void AddShip(const char*);
     int FindFd(const char*);
