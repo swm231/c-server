@@ -4,12 +4,14 @@
 #include <string.h>
 #include <unistd.h>
 #include <string.h>
+#include <thread>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <stdio.h>
-#include "Epoll.h"
-#include "Channel.h"
 #include "util.h"
+#include "Channel.h"
+#include "Epoll.h"
+#include "EventLoop.h"
 
 #define BUFFER_SIZE 1024
 void setnonblocking(int fd){
@@ -25,13 +27,31 @@ int main(){
     serv_addr.sin_port = htons(8888);
     errif(connect(sockfd, (sockaddr*)&serv_addr, sizeof(serv_addr)) == -1, "socket connect error");
 
-    //setnonblocking(sockfd);
-    char buf[BUFFER_SIZE];
-    bzero(&buf, sizeof buf);
-    ssize_t read_bytes = read(sockfd, buf, sizeof buf);
-    buf[read_bytes] = '\0';
-    printf("%s", buf);
+    EventLoop* loop = new EventLoop();
+    Channel* ch = new Channel(loop, sockfd); 
+    ch->enablereading();
+    ch->SetReadCallback([sockfd](){
+        char buf[1024];
+        bzero(&buf, sizeof buf);
+        int read_bytes = read(sockfd, buf, sizeof buf);
+        buf[read_bytes]='\0';
+        if(read_bytes > 0)
+            printf("%s",buf);
+        if(read_bytes == 0){
+            printf("server socket disconnect!\n");
+            close(sockfd);
+        }
+        else if(read_bytes == -1){
+            close(sockfd);
+            errif(true, "socket read error");
+        }
+    });
 
+    std::thread th([loop](){
+        loop->loop();
+    });
+
+    char buf[1024];
     while(true){
         bzero(&buf, sizeof buf);
         scanf("%s", buf);
@@ -41,20 +61,7 @@ int main(){
             break;
         }
 
-        bzero(&buf, sizeof buf);
-        read_bytes = read(sockfd, buf, sizeof buf);
-        buf[read_bytes]='\0';
-        if(read_bytes > 0)
-            printf("%s",buf);
-        if(read_bytes == 0){
-            printf("server socket disconnect!\n");
-            close(sockfd);
-            break;
-        }
-        else if(read_bytes == -1){
-            close(sockfd);
-            errif(true, "socket read error");
-        }
+        
 
     }
     close(sockfd);
