@@ -5,32 +5,29 @@
 #include "InetAddress.h"
 
 Acceptor::Acceptor(EventLoop* _loop) : loop(_loop){
-    sock = new Socket();
+    sock_ = std::make_unique<Socket>();
     InetAddress* addr = new InetAddress(8888);
-    sock->bind(addr);
-    sock->listen();
-    sock->setnonblocking();
-    ch = new Channel(loop, sock->GetFd());
+    sock_->bind(addr);
+    sock_->listen();
+    sock_->setnonblocking();
+    ch_ = std::make_unique<Channel>(loop, sock_->GetFd());
     std::function<void()> cb = std::bind(&Acceptor::AcceptConnection, this);
-    ch->SetReadCallback(cb);
-    ch->enablereading();
+    ch_->SetReadCallback(cb);
+    ch_->enablereading();
     delete addr;
 }
 
-Acceptor::~Acceptor(){
-    delete sock;
-    delete ch;
-}
+Acceptor::~Acceptor(){}
 
 void Acceptor::AcceptConnection(){  //新连接第一个函数 获取套接字
     InetAddress* clnt_addr = new InetAddress();
-    Socket* clnt_sock = new Socket(sock->accept(clnt_addr));
+    std::shared_ptr<Socket> clnt_sock = std::make_shared<Socket>(sock_->accept(clnt_addr));
     printf("new client fd: %d, IP: %s, Port: %d\n", clnt_sock->GetFd(), inet_ntoa(clnt_addr->GetAddr().sin_addr), ntohs(clnt_addr->GetAddr().sin_port));
     clnt_sock->setnonblocking();
     NewConntectionCallback(clnt_sock);
     delete clnt_addr;
 }
 
-void Acceptor::SetNewConnectionCallback(std::function<void(Socket*)> _cb){
+void Acceptor::SetNewConnectionCallback(std::function<void(std::shared_ptr<Socket>)> _cb){
     NewConntectionCallback = _cb;
 }

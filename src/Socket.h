@@ -2,6 +2,7 @@
 #define _SOCKET_H_
 
 #include <sys/socket.h>
+#include <memory>
 #include "InetAddress.h"
 
 class Socket{

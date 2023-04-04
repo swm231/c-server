@@ -4,7 +4,7 @@
 #include "Channel.h"
 #include <iostream>
 
-LogIn::LogIn(Connection* _conn, Channel* _ch, Socket* _sock) : conn(_conn), ch(_ch), sock(_sock),
+LogIn::LogIn(Connection* _conn, Channel* _ch, std::shared_ptr<Socket> _sock) : conn(_conn), ch(_ch), sock(_sock),
     lstate(LogState::lInvalid), istate(SignIn::iInvalid), ostate(SignOn::oInvalid){
     
     ch->enablereading();

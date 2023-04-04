@@ -3,6 +3,7 @@
 
 #include <sys/epoll.h>
 #include <functional>
+#include <memory>
 
 class EventLoop;
 class Channel{

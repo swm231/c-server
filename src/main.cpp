@@ -12,16 +12,6 @@ int main(){
     EventLoop* loop = new EventLoop();
     Server* server = new Server(loop);
 
-    server->OnConnect([](Connection* conn){
-        while(true){
-            conn->Read();
-            if(conn->GetState() == State::DisConnected){
-                conn->Close();
-                break;
-            }
-        }
-    });
-
     loop->loop();
 
     delete loop;

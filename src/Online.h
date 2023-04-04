@@ -2,6 +2,7 @@
 #define _ONLINE_H_
 
 #include <string>
+#include <memory>
 
 enum Online_State{
     Home,
@@ -19,11 +20,11 @@ private:
     std::string str;
     int fd;
     Account* acc;
-    Socket* sock;
+    std::shared_ptr<Socket> sock;
     Connection* conn;
     Online_State state;
 public:
-    Online(Connection*, Socket*, Account*);
+    Online(Connection*, std::shared_ptr<Socket>, Account*);
     ~Online();
 
     void Onl();

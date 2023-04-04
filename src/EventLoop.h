@@ -3,6 +3,7 @@
 
 #include "Epoll.h"
 #include "ThreadPool.h"
+#include <memory>
 
 class Channel;
 class Epoll;

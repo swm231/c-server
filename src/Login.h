@@ -1,6 +1,7 @@
 #ifndef _LOGIN_H_
 #define _LOGIN_H_
 
+#include <memory>
 
 enum LogState{
     lInvalid,
@@ -23,14 +24,14 @@ class Connection;
 class Channel;
 class LogIn{
 private:
-    Socket* sock;
+    std::shared_ptr<Socket> sock;
     Channel* ch;
     Connection* conn;
     LogState lstate;
     SignIn istate;
     SignOn ostate;
 public:
-    LogIn(Connection*, Channel*, Socket*);
+    LogIn(Connection*, Channel*, std::shared_ptr<Socket>);
     ~LogIn();
 
     void Log();

@@ -4,6 +4,7 @@
 #include <functional>
 #include <vector>
 #include <string>
+#include <memory>
 
 class EventLoop;
 class Socket;
@@ -24,18 +25,19 @@ class Connection{
 private:
     Server* server;
     EventLoop* loop;
-    Socket* sock;
+    std::shared_ptr<Socket> sock;
+    State state;
+
     Channel* ch;
     Account* acc;
-    State state;
-    LogIn* login;
-    Online* onl;
-    std::function<void(Socket*)> DeleteConnectionCallback;
+    std::unique_ptr<LogIn> login;
+    std::unique_ptr<Online> onl;
+    std::unique_ptr<Buffer> ReadBuffer;
+    std::unique_ptr<Buffer> SendBuffer;
+    std::function<void(std::shared_ptr<Socket>)> DeleteConnectionCallback;
     std::function<void()> OnLineCallback;
 public:
-    Buffer* ReadBuffer;
-    Buffer* SendBuffer;
-    Connection(Server*, EventLoop*, Socket*);
+    Connection(Server*, EventLoop*, std::shared_ptr<Socket>);
     ~Connection();
     //Buffer
     void Send_str(const char*);
@@ -46,7 +48,7 @@ public:
     void sBuf_append(const char*);
     const char* Readp();
     //Connection
-    void SetDeleteConnectionCallback(std::function<void(Socket*)>);
+    void SetDeleteConnectionCallback(std::function<void(std::shared_ptr<Socket>)>);
     void SetOnLineCallback(std::function<void()>);
     void Set_Online_channel();
     void Close();

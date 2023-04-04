@@ -7,7 +7,7 @@
 #include <string>
 #include <iostream>
 
-Online::Online(Connection* _conn, Socket* _sock, Account* _acc) 
+Online::Online(Connection* _conn, std::shared_ptr<Socket> _sock, Account* _acc) 
     : conn(_conn), state(Online_State::Home), sock(_sock), acc(_acc){
 
     std::function<void()> cb = std::bind(&Online::Onl, this);

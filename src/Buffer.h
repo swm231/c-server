@@ -2,6 +2,7 @@
 #define _BUFFER_H_
 
 #include <string>
+#include <memory>
 
 class Buffer{
 private:

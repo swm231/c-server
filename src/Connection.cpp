@@ -13,22 +13,23 @@
 
 #define MAX_BUFFER 1024
 
-Connection::Connection(Server* _server, EventLoop* _loop, Socket* _sock) 
-        : server(_server), loop(_loop), sock(_sock), ch(new Channel(loop, sock->GetFd())),
-          acc(new Account()),ReadBuffer(new Buffer()), SendBuffer(new Buffer()), 
-          state(State::Invalid), login(new LogIn(this, ch, sock)) {
-    onl = new Online(this, sock, acc);
-    Send_str("Successfully connecting to the server\n 1 Sign in\n 2 Sign on\n");
+Connection::Connection(Server* _server, EventLoop* _loop, std::shared_ptr<Socket> _sock) 
+        : server(_server), loop(_loop), sock(_sock),
+          state(State::Invalid) {
+        
+    ch = new Channel(loop, sock->GetFd());
+    acc = new Account();
+    ReadBuffer = std::make_unique<Buffer>();
+    SendBuffer = std::make_unique<Buffer>();
+    login = std::make_unique<LogIn>(this, ch, sock);
+    onl = std::make_unique<Online>(this, sock, acc);
 
+    Send_str("Successfully connecting to the server\n 1 Sign in\n 2 Sign on\n");
 }
 
 Connection::~Connection(){
-    delete sock;
     delete ch;
     delete acc;
-    delete ReadBuffer;
-    delete SendBuffer;
-    delete login;
 }
 
 void Connection::Send_str(const char* str){
@@ -90,7 +91,7 @@ void Connection::Read(){
     }
 }
 
-void Connection::SetDeleteConnectionCallback(std::function<void(Socket*)> cb){
+void Connection::SetDeleteConnectionCallback(std::function<void(std::shared_ptr<Socket>)> cb){
     DeleteConnectionCallback = cb;
 }
 

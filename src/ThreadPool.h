@@ -8,6 +8,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <future>
+#include <memory>
 
 class ThreadPool{
 private:

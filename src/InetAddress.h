@@ -2,6 +2,7 @@
 #define _INETADDRESS_H_
 
 #include <arpa/inet.h>
+#include <memory>
 
 class InetAddress{
 private:

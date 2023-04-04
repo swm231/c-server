@@ -4,6 +4,7 @@
 #include <mysql/mysql.h>
 #include <string>
 #include <vector>
+#include <memory>
 
 class Account{
 public:

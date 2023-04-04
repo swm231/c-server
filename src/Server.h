@@ -2,6 +2,7 @@
 #define _SERVER_H_
 
 #include "EventLoop.h"
+#include <memory>
 #include <map>
 #include <vector>
 
@@ -24,9 +25,8 @@ public:
     ~Server();
 
     void handleReadEvent(int);
-    void NewConnection(Socket*);
-    void DeleteConnection(Socket*);
-    void OnConnect(std::function<void(Connection*)>);
+    void NewConnection(std::shared_ptr<Socket>);
+    void DeleteConnection(std::shared_ptr<Socket>);
 
     bool Insert(const Account*);
     bool Delete(const Account*);
