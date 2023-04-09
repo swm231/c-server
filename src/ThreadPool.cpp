@@ -1,21 +1,21 @@
 #include "ThreadPool.h"
 
-ThreadPool::ThreadPool(int size) : stop(false){
-    for(int i = 0; i < size; ++ i){
-        threads.emplace_back(std::thread([this](){
-            while(true){
+ThreadPool::ThreadPool(int _n) : stop(false){
+    for(int i = 0; i < _n; ++ i)
+        workers.emplace_back([this]{
+            for(;;){
                 std::function<void()> task;
                 {
                     std::unique_lock<std::mutex> lock(mtx);
-                    cv.wait(lock, [this](){return stop || !tasks.empty();});
-                    if(stop && tasks.empty()) return;
-                    task = tasks.front();
-                    tasks.pop();
+                    cv.wait(lock, [this] { return stop || !task_que.empty(); });
+                    if(stop && task_que.empty())
+                        return;
+                    task = std::move(task_que.front());
+                    task_que.pop();
                 }
                 task();
             }
-        }));
-    }
+        });
 }
 
 ThreadPool::~ThreadPool(){
@@ -24,9 +24,6 @@ ThreadPool::~ThreadPool(){
         stop = true;
     }
     cv.notify_all();
-    for(auto &th : threads){
-        if(th.joinable())
-            th.join();
-    }
+    for(auto& work : workers)
+        work.join();
 }
-
