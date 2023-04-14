@@ -1,12 +1,14 @@
 #include "EventLoop.h"
 #include "Epoll.h"
 #include "Channel.h"
+#include "ThreadCache.h"
 #include <vector>
 
-EventLoop::EventLoop() : ep(new Epoll()), quit(false){}
+EventLoop::EventLoop() :
+    quit(false), ep(new (ThreadCache::operator new(sizeof(Epoll))) Epoll()){}
 
 EventLoop::~EventLoop(){
-    delete ep;
+    ThreadCache::operator delete (ep, sizeof(*ep));
 }
 
 void EventLoop::loop(){
@@ -28,5 +30,4 @@ void EventLoop::deleteChannel(Channel* ch){
 
 void EventLoop::AddTask(std::function<void()> func){
     func();
-    //pool->add(func);
 }

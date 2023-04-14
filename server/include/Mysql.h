@@ -35,8 +35,7 @@ public:
     Mysql();
     ~Mysql();
 
-    bool InitSql(std::string,std::string,std::string,std::string);
-    bool ExeSql(std::string);
+    bool InitSql(std::string, std::string, std::string, std::string);
 
     bool Insert(const Account*);
     bool Delete(const Account*);

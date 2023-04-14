@@ -18,14 +18,11 @@ Mysql::~Mysql(){
 bool Mysql::InitSql(std::string host, std::string user, std::string passwd, std::string db_name){
     mysql = mysql_real_connect(mysql, host.c_str(), user.c_str(), passwd.c_str(), db_name.c_str(), 0, NULL, 0);
     errif(mysql == NULL, mysql_error(mysql));
-    return true;
-}
-
-bool Mysql::ExeSql(std::string sql){
-    errif(mysql_query(mysql, sql.c_str()), mysql_error(mysql));
-    result = mysql_store_result(mysql);
-    if(result){
-
+    char sql[MAX_SQL];
+    sprintf(sql, "UPDATE accounts SET sockfd = '-1' where name = '*';");
+    if(mysql_query(mysql, sql)){
+        errif(true, mysql_error(mysql));
+        return false;
     }
     return true;
 }
@@ -109,10 +106,15 @@ std::vector<std::string> Mysql::LookList(const Account* acc){
 }
 
 int toi(std::string s){
-    int res = 0;
-    for(int i = 0; s[i]; ++ i)
+    int res = 0, flag = 0;
+    for(int i = 0; s[i]; ++ i){
+        if(s[i] == '-'){
+            flag = 1;
+            continue;
+        }
         res *= 10, res += s[i] - '0';
-    return res;
+    }
+    return (flag ? -res : res);
 }
 
 std::vector<int> Mysql::GetOnlFd(){
@@ -171,7 +173,7 @@ int Mysql::FindFd(const char* str){
         if(n == 0) return 0;
         row = mysql_fetch_row(result);
         
-        return (int)(*row[2]) - '0';
+        return toi(row[2]);
     }
     return 0;
 }

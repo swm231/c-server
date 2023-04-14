@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <memory>
+#include <string.h>
 
 class EventLoop;
 class Socket;

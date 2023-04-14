@@ -1,6 +1,7 @@
 #ifndef _CONNECTION_H_
 #define _CONNECTION_H_
 
+#include "ThreadCache.h" 
 #include <functional>
 #include <vector>
 #include <string>

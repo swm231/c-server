@@ -6,8 +6,8 @@
 
 class Buffer{
 private:
-public:
     std::string buf;
+public:
     Buffer();
     Buffer(std::string);
     ~Buffer();

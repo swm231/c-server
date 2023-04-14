@@ -30,7 +30,11 @@ void LogIn::Log(){
     else if(lstate == LogState::lSignIn){
         if(istate == SignIn::iInvalid){
             conn->Set_Name();
-            if(conn->Check() == 1){
+            if(conn->FindFd(conn->Readp()) != -1){
+                conn->Send_str("\nUser has logged in\n 1 Sign in\n 2 Sign on\n");
+                lstate = LogState::lInvalid;
+            }
+            else if(conn->Check() == 1){
                 conn->Send_str("\nPlease input passward:\n");
                 istate = SignIn::iUser;
             }

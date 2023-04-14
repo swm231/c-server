@@ -7,6 +7,7 @@
 #include "Channel.h"
 #include "Login.h"
 #include "EventLoop.h"
+#include "ThreadCache.h" 
 #include "Server.h"
 #include <unistd.h>
 #include <string.h>
@@ -17,8 +18,8 @@ Connection::Connection(Server* _server, EventLoop* _loop, std::shared_ptr<Socket
         : server(_server), loop(_loop), sock(_sock),
           state(State::Invalid) {
         
-    ch = new Channel(loop, sock->GetFd());
-    acc = new Account();
+    ch = new (ThreadCache::operator new (sizeof(Channel))) Channel(loop, sock->GetFd());
+    acc = new (ThreadCache::operator new (sizeof(Account))) Account();
     ReadBuffer = std::make_unique<Buffer>();
     SendBuffer = std::make_unique<Buffer>();
     login = std::make_unique<LogIn>(this, ch, sock);
@@ -28,8 +29,8 @@ Connection::Connection(Server* _server, EventLoop* _loop, std::shared_ptr<Socket
 }
 
 Connection::~Connection(){
-    delete ch;
-    delete acc;
+    ThreadCache::operator delete (ch, sizeof(*ch));
+    ThreadCache::operator delete (acc, sizeof(*acc));
 }
 
 void Connection::Send_str(const char* str){
